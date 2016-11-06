@@ -9,8 +9,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # options are documented and commented below. For a complete reference,
   # please see the online documentation at vagrantup.com.
 
-  # Every Vagrant virtual environment requires a box to build off of. hashicorp/precise64
-  config.vm.box = "bento/fedora-21"
+  # Every Vagrant virtual environment requires a box to build off of.
+  config.vm.box = "bento/ubuntu-16.04"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
@@ -79,13 +79,34 @@ config.vm.synced_folder "./log", "/var/log/tomcat", create:true, owner: "root", 
   # # }
   #
 
-   config.vm.provision "shell" do |s|
-     s.inline = "yum -y install puppet"
-   end
-   config.vm.provision "puppet" do |puppet|
-     puppet.manifests_path = "Puppet/manifests"
-     puppet.module_path = "Puppet/modules"
-     puppet.manifest_file  = "site.pp"
-   end
+  config.vm.provision "shell", inline: <<-SHELL
+    add-apt-repository ppa:openjdk-r/ppa -y
+    apt-get update
+    echo "\n----- Installing Apache and Java 8 ------\n"
+    apt-get -y install apache2 openjdk-8-jdk
+    update-alternatives --config java
+    echo "\n----- Installing Tomcat ------\n"
+    groupadd tomcat
+    useradd -s /bin/false -g tomcat -d /opt/tomcat tomcat
+    cd /tmp
+    wget -q http://mirrors.gigenet.com/apache/tomcat/tomcat-8/v8.0.30/bin/apache-tomcat-8.0.30.tar.gz
+    mkdir /opt/tomcat
+    tar xvf apache-tomcat-8*tar.gz -C /opt/tomcat --strip-components=1
+    cd /opt/tomcat
+    chgrp -R tomcat /opt/tomcat
+    chmod g+rwx /opt/tomcat/conf
+    chmod g+r /opt/tomcat/conf/*
+    chown -R tomcat webapps/ work/ temp/ logs/
+    echo "\n----- Create a systemd Service File ------\n"
+    cd /tmp
+    wget -q https://gist.githubusercontent.com/kryjex/b2cc25d407e89092288fa757f7a38b05/raw/9bc1fdae7e10ed54a546181386acf413edb792a2/tomcat.service
+    sudo mv tomcat.conf /etc/systemd/system/
+    sed -i "s#<tomcat-users>#  <user username=\\"admin\\" password=\\"secret\\" roles=\\"manager-gui,admin-gui\\"/>\\n</tomcat-users>#" /opt/tomcat/conf/tomcat-users.xml
+    systemctl daemon-reload
+    systemctl start tomcat
+    systemctl status tomcat
+    ufw allow 8080
+    systemctl enable tomcat
+  SHELL
 
 end
