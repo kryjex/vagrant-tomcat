@@ -1,6 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# https://www.digitalocean.com/community/tutorials/how-to-install-apache-tomcat-8-on-ubuntu-16-04
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
@@ -40,9 +41,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
-config.vm.synced_folder "./webapps", "/var/lib/tomcat/webapps", create:true, owner: "root", group: "root", mount_options: ["dmode=777,fmode=666"]
-config.vm.synced_folder "./conf", "/etc/tomcat", create:true, owner: "root", group: "root", mount_options: ["dmode=777,fmode=666"]
-config.vm.synced_folder "./log", "/var/log/tomcat", create:true, owner: "root", group: "root", mount_options: ["dmode=777,fmode=666"]
+config.vm.synced_folder "./webapps", "/opt/tomcat/webapps", create:true, owner: "root", group: "root", mount_options: ["dmode=777,fmode=666"]
+config.vm.synced_folder "./conf", "/opt/tomcat/conf", create:true, owner: "root", group: "root", mount_options: ["dmode=777,fmode=666"]
+config.vm.synced_folder "./logs", "/opt/tomcat/logs", create:true, owner: "root", group: "root", mount_options: ["dmode=777,fmode=666"]
 
  
   # Provider-specific configuration so you can fine-tune various
@@ -99,7 +100,7 @@ config.vm.synced_folder "./log", "/var/log/tomcat", create:true, owner: "root", 
     echo "\n----- Creating a systemd Service File ------\n"
     cd /tmp
     wget -q https://gist.githubusercontent.com/kryjex/b2cc25d407e89092288fa757f7a38b05/raw/9bc1fdae7e10ed54a546181386acf413edb792a2/tomcat.service
-    sudo mv tomcat.conf /etc/systemd/system/
+    sudo mv tomcat.service /etc/systemd/system/
     sed -i "s#<tomcat-users>#  <user username=\\"admin\\" password=\\"secret\\" roles=\\"manager-gui,admin-gui\\"/>\\n</tomcat-users>#" /opt/tomcat/conf/tomcat-users.xml
     systemctl daemon-reload
     systemctl start tomcat
