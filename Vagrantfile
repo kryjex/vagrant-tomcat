@@ -80,7 +80,6 @@ config.vm.synced_folder "./log", "/var/log/tomcat", create:true, owner: "root", 
   #
 
   config.vm.provision "shell", inline: <<-SHELL
-    add-apt-repository ppa:openjdk-r/ppa -y
     apt-get update
     echo "\n----- Installing Apache and Java 8 ------\n"
     apt-get -y install apache2 openjdk-8-jdk
@@ -89,7 +88,7 @@ config.vm.synced_folder "./log", "/var/log/tomcat", create:true, owner: "root", 
     groupadd tomcat
     useradd -s /bin/false -g tomcat -d /opt/tomcat tomcat
     cd /tmp
-    wget -q http://mirrors.gigenet.com/apache/tomcat/tomcat-8/v8.0.30/bin/apache-tomcat-8.0.30.tar.gz
+    wget -q http://apache.mirrors.ionfish.org/tomcat/tomcat-8/v8.5.5/bin/apache-tomcat-8.5.5.tar.gz
     mkdir /opt/tomcat
     tar xvf apache-tomcat-8*tar.gz -C /opt/tomcat --strip-components=1
     cd /opt/tomcat
@@ -97,7 +96,7 @@ config.vm.synced_folder "./log", "/var/log/tomcat", create:true, owner: "root", 
     chmod g+rwx /opt/tomcat/conf
     chmod g+r /opt/tomcat/conf/*
     chown -R tomcat webapps/ work/ temp/ logs/
-    echo "\n----- Create a systemd Service File ------\n"
+    echo "\n----- Creating a systemd Service File ------\n"
     cd /tmp
     wget -q https://gist.githubusercontent.com/kryjex/b2cc25d407e89092288fa757f7a38b05/raw/9bc1fdae7e10ed54a546181386acf413edb792a2/tomcat.service
     sudo mv tomcat.conf /etc/systemd/system/
