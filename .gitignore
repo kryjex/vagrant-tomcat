@@ -2,5 +2,4 @@
 *.bin
 *.zip
 *.swp
-.gitignore
 .DS_Store
